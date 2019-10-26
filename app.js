@@ -2,7 +2,9 @@ var express = require('express'),
   session = require('express-session'),
   bodyParser = require('body-parser'),
   hbs = require('express-handlebars'),
-  graph = require('fbgraph')
+  graph = require('fbgraph'),
+  //Google Cloud client library
+  language = require('@google-cloud/language');
 
 
   // Global app object
@@ -59,16 +61,43 @@ app.get('/auth', function(req, res) {
         , "client_secret":  conf.client_secret
         , "code":           req.query.code
       }, function (err, facebookRes) {
-          console.log(facebookRes);
         res.redirect('/LoggedIn');
       });
     }
   });
 
+  let Analyze = async function (text) {
+  
+    // Instantiates a client
+    const client = new language.LanguageServiceClient();
+  
+    const document = {
+      content: text,
+      type: 'PLAIN_TEXT',
+    };
+  
+    // Detects the sentiment of the text
+    const [result] = await client.analyzeSentiment({document: document});
+    const sentiment = result.documentSentiment;
+  
+    console.log(`Text: ${text}`);
+    console.log(`Sentiment score: ${sentiment.score}`);
+    console.log(`Sentiment magnitude: ${sentiment.magnitude}`);
+}
+
   app.get('/LoggedIn', function (req, res){
-        graph.get("/me/feed", function(err, res){
-            console.log(res);
-        })
+
+    graph.get("/me/feed", function(err, res){
+        if (err) {
+            console.log(err);
+        } else {
+
+            let messages = res.data.filter(ele => ele.message !== undefined);
+            messages.forEach(ele => {
+                Analyze(ele.message);
+            });
+        }
+    });
     res.render('LoggedIn', {});
   });
 
