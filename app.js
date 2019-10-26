@@ -66,7 +66,7 @@ app.get('/auth', function(req, res) {
     }
   });
 
-  let Analyze = async function (text) {
+  let getSentiment = async function (text) {
   
     // Instantiates a client
     const client = new language.LanguageServiceClient();
@@ -79,11 +79,14 @@ app.get('/auth', function(req, res) {
     // Detects the sentiment of the text
     const [result] = await client.analyzeSentiment({document: document});
     const sentiment = result.documentSentiment;
-  
-    console.log(`Text: ${text}`);
-    console.log(`Sentiment score: ${sentiment.score}`);
-    console.log(`Sentiment magnitude: ${sentiment.magnitude}`);
+
+    return({
+        "text" : text,
+        "score" : sentiment.score,
+        "magnitude" : sentiment.magnitude,
+    });
 }
+
 
   app.get('/LoggedIn', function (req, res){
 
@@ -91,13 +94,33 @@ app.get('/auth', function(req, res) {
         if (err) {
             console.log(err);
         } else {
-
             let messages = res.data.filter(ele => ele.message !== undefined);
+
+
+
+            let sentiments = [];
             messages.forEach(ele => {
-                Analyze(ele.message);
+                sentiments.push(getSentiment(ele.message));
             });
+            Promise.all(sentiments).then(function(values) {
+                console.log(values);
+            })
         }
     });
+
+    // graph.get("/me/photos", function (err, res){
+    //     if (err){
+    //         console.log(err);
+    //     } else {
+    //         photoIds = res.data.map(ele => {return ele.id});
+    //         photoIds.forEach(ele => {
+    //             graph.get(ele + "/comments", function (err, res) {
+    //                 console.log(res);
+    //             });
+    //         })
+    //         console.log(photoIds);
+    //     }
+    // })
     res.render('LoggedIn', {});
   });
 
