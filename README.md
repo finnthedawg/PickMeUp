@@ -18,9 +18,11 @@ Sample configuration.
 
 **Note remember to whitelist your domain in the app console**
 
-Then create a google GCP service account. Set your local shell variable to your JSON credential files with the following command.
+Then create a google GCP service account. Download the private key from your service account and set your shell variable with the following command.
 
 ``` export GOOGLE_APPLICATION_CREDENTIALS="/home/user/Downloads/service-account-file.json" ```
+
+Finally, create your Firebase Realtime Database account and place the authentication .json file in `/config/firebase_service_key.json`
 
 Then start up the service!
 
