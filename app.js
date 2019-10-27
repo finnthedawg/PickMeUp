@@ -39,6 +39,10 @@ app.get('/friends', function (req, res) {
   res.render('friends', {layout: "main2"});
 });
 
+app.get('/friends2', function (req, res) {
+  res.render('friends2', { layout: "main2" });
+});
+
 var conf = require('./config/config.json')
 var options = {
   timeout:  3000
@@ -187,17 +191,18 @@ app.get('/LoggedIn', async function (req, res) {
 
 var ref = db.ref("posts");
 
-ref.set(posts);
-res.render('LoggedIn', {});
+  ref.set(posts);
+  res.redirect('/');
 });
 
 app.get('/retrieve', function(req, res) {
 
   //keywords as limited dataset, but to be self-learned using NLP classification.
   let keywordsArr = {
-    "Beauty" : ["queen", "slay", "beaut", "hand"],
-    "Milestones" : ["cong", "job", "graduation"]
+    "Beauty" : ["queen", "slay", "prett", "hand", "beaut"],
+    "Milestones" : ["job", "graduation", "congrat"]
   }
+  
   let keywords = keywordsArr[req.query.type];
   if (keywords === undefined){
     res.render("Index", {});
@@ -219,10 +224,15 @@ app.get('/retrieve', function(req, res) {
 
     posts = posts.filter((post) => {
       let matchesKeywords = keywords.reduce((acc, curr) => {
-        if(post.text.toLowerCase().includes(curr)){
-          return(acc || true);
+        try{
+          if (post.text.toLowerCase().includes(curr)) {
+            return (acc || true);
+          }
+        } catch (e) {
+          return(acc || false);
         }
       }, false)
+
       if (matchesKeywords === undefined || matchesKeywords === false){
         return(false);
       } else {

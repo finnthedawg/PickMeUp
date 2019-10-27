@@ -5,10 +5,32 @@ html {
 * { box-sizing: border-box; }
 
 body { 
-    font-family: sans-serif;
-    background-image: url('/img/back.jpeg');
+    font-family: 'Pacifico', cursive;
+    background-image: url('/img/back2.jpg');
     background-repeat: no-repeat;
     background-attachment: fixed; 
-    background-size: cover;
+    background-size:auto 100%;
     min-height: 100%;
+}
+
+.message {
+    position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  text-align: center;
+}
+
+h2{
+    font-size: 50px;
+}
+
+.print-icon{
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    font-size: 25px;
+    cursor: pointer;
 }
