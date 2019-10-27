@@ -176,7 +176,39 @@ async function getPostsAndSentiment(){
 }
 
 app.get('/LoggedIn', async function (req, res) {
+  let posts = await getPostsAndSentiment();
+  posts = posts.map((ele) => {
+    return(ele.Sentiment);
+  })
 
+var ref = db.ref("posts");
+
+ref.set(posts);
+res.render('LoggedIn', {});
+});
+
+app.get('/rank', function(req, res) {
+  var ref = db.ref("posts");
+
+  ref.on("value", function(snapshot) {
+
+    let posts = snapshot.val();
+    posts.sort((a, b) => {
+      if (a.score < b.score){
+        return(1);
+      }
+      if(a.score > b.score){
+        return(-1);
+      }
+      return(0);
+    })
+
+    console.log(posts);
+  }, function (errorObject) {
+    console.log("The read failed: " + errorObject.code);
+  });
+
+  res.render('index', {});
 });
 
 
