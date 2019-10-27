@@ -1,0 +1,14 @@
+html {
+  height: 100%;
+}
+
+* { box-sizing: border-box; }
+
+body { 
+    font-family: sans-serif;
+    background-image: url('/img/back.jpeg');
+    background-repeat: no-repeat;
+    background-attachment: fixed; 
+    background-size: cover;
+    min-height: 100%;
+}

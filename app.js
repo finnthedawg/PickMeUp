@@ -35,6 +35,10 @@ app.get('/', function (req, res) {
   res.render('index', {});
 });
 
+app.get('/friends', function (req, res) {
+  res.render('friends', {layout: "main2"});
+});
+
 var conf = require('./config/config.json')
 var options = {
   timeout:  3000
