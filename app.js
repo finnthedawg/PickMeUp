@@ -29,6 +29,11 @@ app.get('/', function (req, res) {
 });
 
 var conf = require('./config/config.json')
+var options = {
+  timeout:  3000
+, pool:     { maxSockets:  Infinity }
+, headers:  { connection:  "keep-alive" }
+};
 
 app.get('/auth', function (req, res) {
 
@@ -73,6 +78,7 @@ async function getSentiment(text) {
 
   const document = {
     content: text,
+    language: 'en',
     type: 'PLAIN_TEXT',
   };
 
@@ -92,19 +98,20 @@ async function getFeed(queryPath) {
   let newMessages;
   let next;
   let feedPromise = new Promise((resolve, reject) => {
-    graph.get(queryPath, function (err, res) {
-      if (err) {
-        console.log(err);
-      } else {
-        newMessages = res.data.filter(ele => ele.message !== undefined);
-        try {
-          next = res.paging.next;
-        } catch (err){
-          next = undefined;
+    graph.setOptions(options)
+      .get(queryPath, function (err, res) {
+        if (err) {
+          console.log("Invalid query" , err);
+        } else {
+          newMessages = res.data.filter(ele => ele.message !== undefined);
+          try {
+            next = res.paging.next;
+          } catch (err){
+            next = undefined;
+          }
+          resolve();
         }
-        resolve();
-      }
-    });
+      });
   });
   await feedPromise;
   return({
@@ -119,7 +126,7 @@ async function getPosts(){
   let reachedEnd = false;
   while (reachedEnd === false) {
     let val = await getFeed(nextPage);
-    console.log(val.next);
+    console.log("The next", val.Next);
     if(val.Next === undefined){
       reachedEnd = true;
     } else {
@@ -138,9 +145,31 @@ async function getPosts(){
   return(messages);
 }
 
+async function getPostsAndSentiment(){
+  let posts = await getPosts();
+  posts = posts.map((post) => {
+    return({
+      "Post" : post,
+      "Sentiment" : getSentiment(post)
+    });
+  })
+
+  for(var i = 0; i < posts.length; i++){
+    try {
+      posts[i].Sentiment = await posts[i].Sentiment;
+    } catch(error) {
+      console.log(error);
+      posts[i].Sentiment = {
+        score : 0,
+        magnitude : 0
+      };
+    }
+  }
+  return(posts);
+}
+
 app.get('/LoggedIn', async function (req, res) {
-  console.log(await getPosts());
-  res.render('LoggedIn', {});
+  console.log(await getPostsAndSentiment());
 });
 
 
