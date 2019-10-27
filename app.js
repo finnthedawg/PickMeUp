@@ -187,28 +187,50 @@ ref.set(posts);
 res.render('LoggedIn', {});
 });
 
-app.get('/rank', function(req, res) {
+app.get('/retrieve', function(req, res) {
+
+  //keywords as limited dataset, but to be self-learned using NLP classification.
+  let keywordsArr = {
+    "Beauty" : ["queen", "slay", "beaut", "hand"],
+    "Milestones" : ["cong", "job", "graduation"]
+  }
+  let keywords = keywordsArr[req.query.type];
+  if (keywords === undefined){
+    res.render("Index", {});
+    return("Error");
+  }
+
   var ref = db.ref("posts");
-
   ref.on("value", function(snapshot) {
-
     let posts = snapshot.val();
     posts.sort((a, b) => {
-      if (a.score < b.score){
+      if ((a.score + a.magnitude*0.1) < (b.score + b.magnitude*0.1)){
         return(1);
       }
-      if(a.score > b.score){
+      if((a.score + a.magnitude*0.1) > (b.score + b.magnitude*0.1)){
         return(-1);
       }
       return(0);
+    });
+
+    posts = posts.filter((post) => {
+      let matchesKeywords = keywords.reduce((acc, curr) => {
+        if(post.text.toLowerCase().includes(curr)){
+          return(acc || true);
+        }
+      }, false)
+      if (matchesKeywords === undefined || matchesKeywords === false){
+        return(false);
+      } else {
+        return(true);
+      }
     })
 
-    console.log(posts);
+    res.json(posts.slice(0, 10));
   }, function (errorObject) {
     console.log("The read failed: " + errorObject.code);
   });
 
-  res.render('index', {});
 });
 
 
