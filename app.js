@@ -66,7 +66,7 @@ app.get('/auth', function (req, res) {
   }
 });
 
-let getSentiment = async function (text) {
+async function getSentiment(text) {
 
   // Instantiates a client
   const client = new language.LanguageServiceClient();
@@ -97,7 +97,11 @@ async function getFeed(queryPath) {
         console.log(err);
       } else {
         newMessages = res.data.filter(ele => ele.message !== undefined);
-        next = res.paging.next;
+        try {
+          next = res.paging.next;
+        } catch (err){
+          next = undefined;
+        }
         resolve();
       }
     });
@@ -109,22 +113,33 @@ async function getFeed(queryPath) {
   });
 }
 
-app.get('/LoggedIn', async function (req, res) {
+async function getPosts(){
   let messages = [];
   let nextPage = "/me/feed";
   let reachedEnd = false;
   while (reachedEnd === false) {
     let val = await getFeed(nextPage);
     console.log(val.next);
-    if(val.next === undefined){
+    if(val.Next === undefined){
       reachedEnd = true;
     } else {
-      nextPage = val.next
+      nextPage = val.Next
     }
-    console.log(val);
+    messages = messages.concat(val.Messages);
   }
 
-  console.log("Done");
+  //Extract only the messages.
+  messages = messages.map((ele) => {
+    if (ele.message !== undefined){
+      return(ele.message);
+    }
+  })
+
+  return(messages);
+}
+
+app.get('/LoggedIn', async function (req, res) {
+  console.log(await getPosts());
   res.render('LoggedIn', {});
 });
 
