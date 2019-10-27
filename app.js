@@ -4,7 +4,9 @@ var express = require('express'),
   hbs = require('express-handlebars'),
   graph = require('fbgraph'),
   //Google Cloud client library
-  language = require('@google-cloud/language');
+  language = require('@google-cloud/language'),
+  firebase = require('firebase-admin'),
+  serviceAccount = require("./config/firebase_service_key.json");
 
 
 // Global app object
@@ -12,7 +14,12 @@ var app = express();
 
 var server = require('http').createServer(app)
 
-
+//Firebase connections
+firebase.initializeApp({
+  credential: firebase.credential.cert(serviceAccount),
+  databaseURL: "https://thinking-mesh-257116.firebaseio.com/"
+});
+var db = firebase.database();
 
 //Middleware
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -169,7 +176,7 @@ async function getPostsAndSentiment(){
 }
 
 app.get('/LoggedIn', async function (req, res) {
-  console.log(await getPostsAndSentiment());
+
 });
 
 
